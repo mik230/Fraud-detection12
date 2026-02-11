@@ -1,38 +1,34 @@
 # =============================================
 # STREAMLIT APP
 # FRAUD PREDICTION IN MOBILE TRANSACTIONS
+# UPDATED - AUTO FEATURE MATCHING
 # =============================================
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
 
-# Load saved model and scaler
+# Load model and feature list
 model = pickle.load(open("model.pkl", "rb"))
-scaler = pickle.load(open("scaler.pkl", "rb"))
+features = pickle.load(open("features.pkl", "rb"))
 
 st.title("📱 Fraud Prediction in Mobile Transactions - Tanzania")
-st.write("Enter transaction details to predict whether it is fraud.")
+st.write("Enter transaction details to predict fraud.")
 
 # ======================
-# User Inputs
+# Dynamic Input Fields
 # ======================
-amount = st.number_input("Transaction Amount", min_value=0.0)
-old_balance = st.number_input("Old Balance", min_value=0.0)
-new_balance = st.number_input("New Balance", min_value=0.0)
-transaction_type = st.number_input("Transaction Type (Encoded)", min_value=0)
+input_data = {}
+
+for feature in features:
+    input_data[feature] = st.number_input(f"Enter {feature}", value=0.0)
 
 # ======================
 # Prediction
 # ======================
 if st.button("Predict Fraud"):
-
-    input_data = np.array([[amount, old_balance, new_balance, transaction_type]])
-
-    input_scaled = scaler.transform(input_data)
-
-    prediction = model.predict(input_scaled)
+    input_df = pd.DataFrame([input_data])
+    prediction = model.predict(input_df)
 
     if round(prediction[0]) == 1:
         st.error("⚠️ Fraudulent Transaction Detected!")
